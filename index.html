@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f8fc">
+  <meta name="description" content="A simple, private student record manager that runs in your browser.">
+  <title>Classroom — Student Record Manager</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#" data-page="dashboard" aria-label="Classroom dashboard">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        <span class="brand-copy"><strong>classroom</strong><small>STUDENT MANAGER</small></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="main-nav">
+        <button class="nav-link active" type="button" data-page="dashboard"><span class="nav-icon">⌂</span>Overview</button>
+        <button class="nav-link" type="button" data-page="students"><span class="nav-icon">▤</span>Students<span class="nav-count" id="navStudentCount">0</span></button>
+        <button class="nav-link" type="button" data-page="attendance"><span class="nav-icon">◷</span>Attendance</button>
+        <button class="nav-link" type="button" data-page="insights"><span class="nav-icon">✳</span>AI insights<span class="nav-badge">DEMO</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="privacy-card"><span class="privacy-icon">◈</span><strong>Your data stays yours</strong><p>Records are saved only in this browser.</p></div>
+        <div class="user-profile"><div class="user-avatar">TC</div><div><strong>Teacher's workspace</strong><small>Local account</small></div><span class="user-menu-dot">•••</span></div>
+      </div>
+    </aside>
+
+    <div class="main-column">
+      <header class="topbar">
+        <button class="icon-button mobile-menu" type="button" id="menuToggle" aria-label="Open navigation">☰</button>
+        <div class="breadcrumb"><span>Workspace</span><span class="crumb-slash">/</span><strong id="pageBreadcrumb">Overview</strong></div>
+        <div class="topbar-actions"><span class="today-label" id="todayLabel"></span><button class="icon-button help-button" type="button" id="helpButton" aria-label="About this app">?</button></div>
+      </header>
+
+      <main class="content">
+        <section class="page-section active" id="page-dashboard">
+          <div class="welcome-row">
+            <div><p class="eyebrow" id="welcomeDate"></p><h1>Good morning<span class="heading-dot">.</span></h1><p class="page-subtitle">Here’s what’s happening with your students today.</p></div>
+            <button type="button" class="button button-primary" data-action="add-student"><span class="button-plus">＋</span> Add student</button>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-top"><span>Total students</span><span class="stat-icon icon-blue">▤</span></div><div class="stat-value" id="totalStudents">0</div><div class="stat-note">Across all your classes</div></article>
+            <article class="stat-card"><div class="stat-top"><span>Active students</span><span class="stat-icon icon-green">✓</span></div><div class="stat-value" id="activeStudents">0</div><div class="stat-note"><span class="positive-dot"></span>Currently enrolled</div></article>
+            <article class="stat-card"><div class="stat-top"><span>Average marks</span><span class="stat-icon icon-purple">↗</span></div><div class="stat-value"><span id="averageMarks">—</span><small class="stat-unit" id="averageUnit"></small></div><div class="stat-note">Across recorded subjects</div></article>
+            <article class="stat-card"><div class="stat-top"><span>Attendance rate</span><span class="stat-icon icon-orange">◷</span></div><div class="stat-value"><span id="attendanceRate">—</span><small class="stat-unit" id="attendanceUnit"></small></div><div class="stat-note" id="attendanceNote">No attendance recorded yet</div></article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="panel performance-panel">
+              <div class="panel-heading"><div><h2>Student performance</h2><p>Average marks by student</p></div><button class="text-button" type="button" data-page="students">View students <span>→</span></button></div>
+              <div class="chart-wrap"><canvas id="performanceChart" aria-label="Bar chart showing average marks per student" role="img"></canvas><div class="chart-empty hidden" id="performanceEmpty">Add students and marks to see performance here.</div></div>
+              <div class="chart-legend"><span><i class="legend-swatch"></i>Average marks</span><span class="chart-scale">OUT OF 100</span></div>
+            </article>
+            <article class="panel attendance-panel">
+              <div class="panel-heading"><div><h2>Attendance snapshot</h2><p>All recorded attendance</p></div></div>
+              <div class="donut-wrap"><canvas id="attendanceChart" aria-label="Donut chart showing attendance statuses" role="img"></canvas><div class="donut-center"><strong id="attendanceTotal">0</strong><span>RECORDS</span></div></div>
+              <div class="attendance-legend"><span><i class="legend-dot present"></i>Present <strong id="presentCount">0</strong></span><span><i class="legend-dot late"></i>Late <strong id="lateCount">0</strong></span><span><i class="legend-dot absent"></i>Absent <strong id="absentCount">0</strong></span></div>
+            </article>
+          </div>
+          <article class="panel recent-panel">
+            <div class="panel-heading"><div><h2>Recently added</h2><p>Your latest student records</p></div><button class="text-button" type="button" data-page="students">All students <span>→</span></button></div>
+            <div class="table-scroll"><table><thead><tr><th>STUDENT</th><th>ROLL NUMBER</th><th>CLASS</th><th>AVERAGE MARKS</th><th>STATUS</th><th></th></tr></thead><tbody id="recentStudents"></tbody></table></div>
+            <div class="empty-state compact-empty hidden" id="recentEmpty"><span class="empty-icon">▤</span><strong>No students yet</strong><p>Add your first student to get started.</p><button class="button button-secondary" type="button" data-action="add-student">Add a student</button></div>
+          </article>
+        </section>
+
+        <section class="page-section" id="page-students">
+          <div class="page-title-row"><div><p class="eyebrow">YOUR ROSTER</p><h1>Students<span class="heading-dot">.</span></h1><p class="page-subtitle">Manage student profiles, marks and enrollment.</p></div><div class="title-actions"><button type="button" class="button button-secondary" id="exportCsv">↓ <span>Export CSV</span></button><button type="button" class="button button-primary" data-action="add-student"><span class="button-plus">＋</span> Add student</button></div></div>
+          <article class="panel roster-panel">
+            <div class="roster-toolbar"><div class="search-wrap"><span aria-hidden="true">⌕</span><input id="studentSearch" type="search" placeholder="Search name or roll number..." aria-label="Search students by name or roll number"></div><label class="filter-label">Class<select id="classFilter"><option value="">All classes</option></select></label><label class="filter-label">Status<select id="statusFilter"><option value="">All statuses</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label></div>
+            <div class="table-scroll"><table><thead><tr><th>STUDENT</th><th>ROLL NUMBER</th><th>CLASS</th><th>EMAIL</th><th>AVERAGE</th><th>STATUS</th><th class="actions-heading">ACTIONS</th></tr></thead><tbody id="studentsTable"></tbody></table></div>
+            <div class="empty-state hidden" id="studentsEmpty"><span class="empty-icon">▤</span><strong id="studentsEmptyTitle">No students yet</strong><p id="studentsEmptyText">Add your first student to start building your roster.</p><button class="button button-primary" type="button" data-action="add-student">Add a student</button></div>
+            <div class="table-footer"><span id="studentResultCount">0 students</span><span>Saved automatically in this browser</span></div>
+          </article>
+        </section>
+
+        <section class="page-section" id="page-attendance">
+          <div class="page-title-row"><div><p class="eyebrow">DAILY REGISTER</p><h1>Attendance<span class="heading-dot">.</span></h1><p class="page-subtitle">Mark and update attendance for each student.</p></div><label class="date-picker-label">Attendance date<input type="date" id="attendanceDate"></label></div>
+          <article class="panel attendance-register">
+            <div class="register-summary"><div><h2 id="attendanceDateTitle">Today's register</h2><p id="attendanceDateSummary">Choose a status for each student, then save.</p></div><div class="register-counts"><span class="count-pill count-present"><i></i><b id="dayPresent">0</b> Present</span><span class="count-pill count-late"><i></i><b id="dayLate">0</b> Late</span><span class="count-pill count-absent"><i></i><b id="dayAbsent">0</b> Absent</span></div></div>
+            <div class="table-scroll"><table><thead><tr><th>STUDENT</th><th>ROLL NUMBER</th><th>CLASS</th><th>STATUS</th><th></th></tr></thead><tbody id="attendanceTable"></tbody></table></div>
+            <div class="empty-state hidden" id="attendanceEmpty"><span class="empty-icon">◷</span><strong>No students to take attendance</strong><p>Add student records first, then their daily attendance will appear here.</p><button class="button button-primary" type="button" data-action="add-student">Add a student</button></div>
+          </article>
+        </section>
+
+        <section class="page-section" id="page-insights">
+          <div class="page-title-row"><div><p class="eyebrow">PATTERNS &amp; PROGRESS</p><h1>AI insights<span class="heading-dot">.</span></h1><p class="page-subtitle">A quick read on student progress using your saved records.</p></div><span class="demo-mode-chip"><span></span> DEMO MODE · SIMULATED</span></div>
+          <div class="demo-disclaimer"><span class="disclaimer-icon">✳</span><p><strong>About these insights</strong> This demo uses simple, transparent rules to summarize marks and attendance already saved in this browser. It is not connected to an AI service, and no data is sent anywhere.</p></div>
+          <div class="insight-summary-grid"><article class="insight-summary-card"><span class="insight-card-icon icon-purple">↗</span><div><span>Class average</span><strong id="insightAverage">—</strong><small>Across all recorded subject marks</small></div></article><article class="insight-summary-card"><span class="insight-card-icon icon-green">✓</span><div><span>Strong attendance</span><strong id="strongAttendanceCount">0 students</strong><small>Attendance at or above 90%</small></div></article>          <article class="insight-summary-card"><span class="insight-card-icon icon-orange">◎</span><div><span>Needs attention</span><strong id="attentionCount">0 students</strong><small>Based on marks, attendance or status</small></div></article></div>
+          <div class="insight-list-heading"><div><h2>Student observations</h2><p>Generated from the latest saved records</p></div><span class="rule-based-label">RULE-BASED SUMMARY</span></div>
+          <div class="insight-list" id="insightsList"></div>
+        </section>
+      </main>
+      <footer class="app-footer"><span>Classroom <span>·</span> Student Record Manager</span><span><i></i> Data stored locally on this device</span></footer>
+    </div>
+  </div>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <dialog class="app-dialog student-dialog" id="studentDialog" aria-labelledby="studentDialogTitle">
+    <form id="studentForm" novalidate>
+      <div class="dialog-header"><div><p class="eyebrow" id="formEyebrow">STUDENT PROFILE</p><h2 id="studentDialogTitle">Add a student</h2></div><button class="dialog-close" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+      <input type="hidden" id="studentId">
+      <div class="form-grid">
+        <label class="field field-wide">Full name <span class="required-mark">*</span><input id="studentName" name="name" type="text" maxlength="80" autocomplete="name" placeholder="e.g. Maya Chen" required></label>
+        <label class="field">Roll number <span class="required-mark">*</span><input id="rollNumber" name="roll" type="text" maxlength="30" placeholder="e.g. CS-024" required></label>
+        <label class="field">Class <span class="required-mark">*</span><input id="studentClass" name="className" type="text" maxlength="40" placeholder="e.g. Grade 10 · A" required></label>
+        <label class="field">Email <input id="studentEmail" name="email" type="email" maxlength="120" autocomplete="email" placeholder="student@example.com"></label>
+        <label class="field">Phone <input id="studentPhone" name="phone" type="tel" maxlength="25" autocomplete="tel" placeholder="+1 (555) 000-0000"></label>
+        <label class="field">Enrollment status<select id="studentStatus" name="status"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label>
+        <div class="field photo-field"><span>Profile photo</span><div class="photo-control"><div class="photo-preview" id="photoPreview">＋</div><div><label class="upload-button" for="studentPhoto">Upload photo</label><input id="studentPhoto" type="file" accept="image/png,image/jpeg,image/webp"><small>JPG, PNG or WebP · up to 2 MB</small></div></div></div>
+      </div>
+      <div class="marks-editor">
+        <div class="marks-editor-heading"><div><h3>Subject marks</h3><p>Enter scores from 0 to 100. Grades are calculated automatically.</p></div><button class="small-outline-button" type="button" id="addSubject">＋ Add subject</button></div>
+        <div class="subject-rows" id="subjectRows"></div>
+        <div class="form-error" id="formError" role="alert"></div>
+      </div>
+      <div class="dialog-footer"><button class="button button-secondary" type="button" data-close-dialog>Cancel</button><button class="button button-primary" type="submit" id="saveStudentButton">Save student</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog profile-dialog" id="profileDialog" aria-labelledby="profileName">
+    <div class="dialog-header"><p class="eyebrow">STUDENT PROFILE</p><button class="dialog-close" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+    <div id="profileContent"></div>
+  </dialog>
+  <dialog class="app-dialog confirm-dialog" id="confirmDialog" aria-labelledby="confirmTitle">
+    <div class="dialog-header"><div><p class="eyebrow">PLEASE CONFIRM</p><h2 id="confirmTitle">Delete student?</h2></div><button class="dialog-close" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+    <p class="confirm-copy" id="confirmCopy">This record will be permanently removed from this browser.</p>
+    <div class="dialog-footer"><button class="button button-secondary" type="button" data-close-dialog>Keep record</button><button class="button button-danger" type="button" id="confirmDelete">Delete student</button></div>
+  </dialog>
+  <script src="js/script.js"></script>
+</body>
+</html>
